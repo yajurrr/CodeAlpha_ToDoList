@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+neo_task_project/backend/venv/
+.env

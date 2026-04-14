@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>NEO_TASK // Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#df8eff",
+                        "secondary": "#00eefc",
+                        "secondary-dim": "#00deec",
+                        "tertiary": "#bcffae",
+                        "error": "#ff6e84",
+                        "surface-container": "#19191f",
+                        "background": "#0e0e13",
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        .glass-panel {
+            background: rgba(31, 31, 38, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        body {
+            background-color: #0e0e13;
+            background-image: linear-gradient(rgba(14, 14, 19, 0.85), rgba(14, 14, 19, 0.85));
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Hide scrollbar for neatness */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #df8eff;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-white font-body min-h-screen">
+
+    <header id="app-header"
+        class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-zinc-950/60 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-[0_0_15px_rgba(223,142,255,0.1)]">
+    </header>
+
+    <aside
+        class="fixed left-0 top-0 h-full z-40 flex flex-col pt-20 bg-zinc-900/80 backdrop-blur-2xl w-64 border-r border-cyan-500/20 shadow-[10px_0_30px_rgba(0,238,252,0.05)] hidden lg:flex">
+        <div id="sidebar-profile" class="px-6 mb-8 flex items-center gap-4"></div>
+        <nav id="sidebar-nav" class="flex flex-col gap-1">
+            <a href="#tasks"
+                class="nav-link flex items-center gap-4 px-6 py-4 transition-colors font-label font-light text-cyan-400 border-r-2 border-cyan-400 bg-cyan-500/5">
+                <span class="material-symbols-outlined">terminal</span> <span>TASKS</span>
+            </a>
+            <a href="#completed"
+                class="nav-link flex items-center gap-4 px-6 py-4 transition-colors font-label font-light text-zinc-500 hover:text-zinc-300">
+                <span class="material-symbols-outlined">check_circle</span> <span>COMPLETED</span>
+            </a>
+            <a href="#settings"
+                class="nav-link flex items-center gap-4 px-6 py-4 transition-colors font-label font-light text-zinc-500 hover:text-zinc-300">
+                <span class="material-symbols-outlined">settings</span> <span>SETTINGS</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-6">
+            <div class="p-4 glass-panel border border-tertiary/20 rounded-lg flex items-center gap-2">
+                <span class="w-2 h-2 bg-tertiary rounded-full animate-pulse shadow-[0_0_5px_#bcffae]"></span>
+                <span class="font-label text-tertiary text-[10px]">SYSTEM ONLINE</span>
+            </div>
+        </div>
+    </aside>
+
+    <main id="main-canvas" class="lg:ml-64 pt-24 pb-20 px-4 md:px-8 lg:px-12 max-w-5xl mx-auto"></main>
+
+    <div id="task-modal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div
+            class="glass-panel p-6 rounded-lg border border-primary/30 w-full max-w-sm mx-4 shadow-[0_0_30px_rgba(223,142,255,0.15)]">
+            <h3 class="font-headline text-xl font-bold text-primary mb-4">NEW_UPLINK_TASK</h3>
+            <input id="new-task-title" type="text" placeholder="Enter task designation..."
+                class="w-full bg-zinc-900/80 border border-white/10 rounded px-4 py-2 text-white mb-4 font-label text-sm outline-none focus:border-primary">
+            <select id="new-task-type"
+                class="w-full bg-zinc-900/80 border border-white/10 rounded px-4 py-2 text-white mb-6 font-label text-sm outline-none focus:border-primary">
+                <option value="CRITICAL">CRITICAL (+500 XP)</option>
+                <option value="MEDIUM">MEDIUM (+250 XP)</option>
+                <option value="LOW">LOW (+100 XP)</option>
+            </select>
+            <div class="flex justify-end gap-3">
+                <button onclick="toggleTaskModal()"
+                    class="px-4 py-2 text-xs font-label text-zinc-400 hover:text-white">CANCEL</button>
+                <button onclick="submitNewTask()"
+                    class="px-4 py-2 text-xs font-label bg-primary/20 text-primary border border-primary/50 rounded hover:bg-primary/40">INITIALIZE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div
+            class="glass-panel p-6 rounded-lg border border-secondary/30 w-full max-w-sm mx-4 shadow-[0_0_30px_rgba(0,238,252,0.15)]">
+            <h3 class="font-headline text-xl font-bold text-secondary mb-4">NEW_OPERATOR_REGISTRATION</h3>
+            <input id="new-profile-name" type="text" placeholder="Enter Operator Designation..."
+                class="w-full bg-zinc-900/80 border border-white/10 rounded px-4 py-2 text-white mb-6 font-label text-sm outline-none focus:border-secondary">
+            <div class="flex justify-end gap-3">
+                <button onclick="toggleProfileModal()"
+                    class="px-4 py-2 text-xs font-label text-zinc-400 hover:text-white">CANCEL</button>
+                <button onclick="submitNewProfile()"
+                    class="px-4 py-2 text-xs font-label bg-secondary/20 text-secondary border border-secondary/50 rounded hover:bg-secondary/40">REGISTER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="avatar-modal"
+        class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div
+            class="glass-panel p-6 rounded-lg border border-primary/30 w-full max-w-sm mx-4 shadow-[0_0_30px_rgba(223,142,255,0.15)]">
+            <h3 class="font-headline text-xl font-bold text-primary mb-4">UPDATE_VISUAL_IDENTITY</h3>
+            <p class="text-[10px] font-label text-zinc-400 mb-2">SELECT A PRESET FRAME:</p>
+            <div class="grid grid-cols-4 gap-3 mb-6">
+                <img onclick="document.getElementById('avatar-url-input').value=this.src"
+                    src="https://api.dicebear.com/9.x/bottts/svg?seed=Cyber&baseColor=df8eff"
+                    class="w-full rounded-lg bg-zinc-800/80 cursor-pointer hover:border-primary border-2 border-transparent transition-all hover:scale-105">
+                <img onclick="document.getElementById('avatar-url-input').value=this.src"
+                    src="https://api.dicebear.com/9.x/bottts/svg?seed=Neon&baseColor=00eefc"
+                    class="w-full rounded-lg bg-zinc-800/80 cursor-pointer hover:border-secondary border-2 border-transparent transition-all hover:scale-105">
+                <img onclick="document.getElementById('avatar-url-input').value=this.src"
+                    src="https://api.dicebear.com/9.x/bottts/svg?seed=Matrix&baseColor=bcffae"
+                    class="w-full rounded-lg bg-zinc-800/80 cursor-pointer hover:border-tertiary border-2 border-transparent transition-all hover:scale-105">
+                <img onclick="document.getElementById('avatar-url-input').value=this.src"
+                    src="https://api.dicebear.com/9.x/bottts/svg?seed=Hack&baseColor=ff6e84"
+                    class="w-full rounded-lg bg-zinc-800/80 cursor-pointer hover:border-error border-2 border-transparent transition-all hover:scale-105">
+            </div>
+            <p class="text-[10px] font-label text-zinc-400 mb-2">OR INJECT CUSTOM IMAGE URL:</p>
+            <input id="avatar-url-input" type="text" placeholder="https://..."
+                class="w-full bg-zinc-900/80 border border-white/10 rounded px-4 py-2 text-white mb-6 font-label text-sm outline-none focus:border-primary">
+
+            <div class="flex justify-end gap-3">
+                <button onclick="toggleAvatarModal()"
+                    class="px-4 py-2 text-xs font-label text-zinc-400 hover:text-white">CANCEL</button>
+                <button onclick="submitAvatar()"
+                    class="px-4 py-2 text-xs font-label bg-primary/20 text-primary border border-primary/50 rounded hover:bg-primary/40">APPLY</button>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="toggleTaskModal()"
+        class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-primary to-primary-dim rounded shadow-[0_0_20px_rgba(223,142,255,0.6)] flex items-center justify-center text-white active:scale-90 transition-transform z-50 hover:scale-105">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </button>
+
+    <script>
+        const XP_PER_LEVEL = 1000;
+        const DB_KEY = 'NEO_TASK_V4';
+        let memoryDB = null;
+
+        // Initial setup with Avatar URLs
+        const defaultData = {
+            activeUser: 'u1',
+            users: {
+                'u1': {
+                    id: 'u1',
+                    name: 'Yajur',
+                    role: 'LVL 1 ROOKIE',
+                    xp: 0,
+                    streak: 0,
+                    lastLogin: new Date().toISOString(),
+                    avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Yajur&baseColor=df8eff'
+                }
+            },
+            tasks: []
+        };
+
+        function getDB() {
+            try {
+                const data = localStorage.getItem(DB_KEY);
+                if (data) return JSON.parse(data);
+            } catch (e) { console.warn("Local storage blocked."); }
+            return memoryDB || JSON.parse(JSON.stringify(defaultData));
+        }
+
+        function saveDB(data) {
+            try { localStorage.setItem(DB_KEY, JSON.stringify(data)); }
+            catch (e) { memoryDB = data; }
+            render();
+        }
+
+        function checkStreak(db) {
+            const user = db.users[db.activeUser];
+            const today = new Date().setHours(0, 0, 0, 0);
+            const lastLog = new Date(user.lastLogin).setHours(0, 0, 0, 0);
+            const diffDays = Math.floor(Math.abs(today - lastLog) / 86400000);
+
+            if (diffDays === 1) user.streak++;
+            else if (diffDays > 1) user.streak = 0;
+
+            user.lastLogin = new Date().toISOString();
+            return db;
+        }
+
+        window.completeTask = function (taskId) {
+            const db = getDB();
+            const task = db.tasks.find(t => t.id === taskId);
+            if (!task || task.done) return;
+
+            task.done = true;
+            const user = db.users[db.activeUser];
+            user.xp += task.xp;
+
+            if (user.xp >= XP_PER_LEVEL) {
+                user.role = `LVL ${parseInt(user.role.split(' ')[1]) + 1} OPERATOR`;
+                user.xp = user.xp % XP_PER_LEVEL;
+                alert(`⚡ SYSTEM UPLOAD COMPLETE: Level Up!`);
+            }
+            saveDB(db);
+        };
+
+        window.switchAccount = function (userId) {
+            const db = getDB();
+            db.activeUser = userId;
+            saveDB(checkStreak(db));
+        };
+
+        // Modal Toggles
+        window.toggleTaskModal = function () {
+            document.getElementById('task-modal').classList.toggle('hidden');
+            document.getElementById('new-task-title').value = '';
+        };
+
+        window.toggleProfileModal = function () {
+            document.getElementById('profile-modal').classList.toggle('hidden');
+            document.getElementById('new-profile-name').value = '';
+        };
+
+        window.toggleAvatarModal = function () {
+            document.getElementById('avatar-modal').classList.toggle('hidden');
+            const user = getDB().users[getDB().activeUser];
+            document.getElementById('avatar-url-input').value = user.avatar || '';
+        };
+
+        // Form Submissions
+        window.submitNewTask = function () {
+            const title = document.getElementById('new-task-title').value.trim();
+            const type = document.getElementById('new-task-type').value;
+            if (!title) return alert("Designation cannot be empty.");
+
+            const db = getDB();
+            db.tasks.push({
+                id: 't_' + Date.now(),
+                user: db.activeUser,
+                title: title,
+                type: type,
+                xp: type === 'CRITICAL' ? 500 : type === 'MEDIUM' ? 250 : 100,
+                done: false
+            });
+            saveDB(db);
+            toggleTaskModal();
+        };
+
+        window.submitNewProfile = function () {
+            const name = document.getElementById('new-profile-name').value.trim();
+            if (!name) return alert("Operator designation required.");
+
+            const db = getDB();
+            const newId = 'u_' + Date.now();
+
+            db.users[newId] = {
+                id: newId,
+                name: name,
+                role: 'LVL 1 ROOKIE',
+                xp: 0,
+                streak: 0,
+                lastLogin: new Date().toISOString(),
+                avatar: `https://api.dicebear.com/9.x/bottts/svg?seed=${name}&baseColor=00eefc`
+            };
+
+            db.activeUser = newId;
+            saveDB(db);
+            toggleProfileModal();
+        };
+
+        window.submitAvatar = function () {
+            const url = document.getElementById('avatar-url-input').value.trim();
+            if (!url) return alert("URL required to update visual identity.");
+
+            const db = getDB();
+            db.users[db.activeUser].avatar = url;
+            saveDB(db);
+            toggleAvatarModal();
+        }
+
+        // Master Renderer
+        function render() {
+            const db = getDB();
+            const user = db.users[db.activeUser];
+            const view = window.location.hash || '#tasks';
+            const xpPct = Math.floor((user.xp / XP_PER_LEVEL) * 100);
+
+            // Generate Avatar HTML snippet
+            const avatarHtml = user.avatar
+                ? `<img src="${user.avatar}" class="w-full h-full object-cover">`
+                : `<span class="material-symbols-outlined text-primary">person</span>`;
+
+            // 1. Header Updates
+            document.getElementById('app-header').innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full border-2 border-primary bg-zinc-800/80 flex items-center justify-center shadow-[0_0_10px_rgba(223,142,255,0.5)] overflow-hidden">
+                        ${avatarHtml}
+                    </div>
+                    <span class="font-headline tracking-widest uppercase text-xl font-bold text-primary">NEO_TASK</span>
+                </div>
+                <div class="hidden md:flex flex-col items-center gap-1 min-w-[300px]">
+                    <div class="flex justify-between w-full text-[10px] font-label text-secondary tracking-tighter">
+                        <span>${user.role} [${user.name}]</span>
+                        <span>XP: ${xpPct}%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary transition-all" style="width: ${xpPct}%"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-surface-container px-3 py-1 rounded-full border border-orange-500/30">
+                        <span class="material-symbols-outlined text-orange-500 text-sm">local_fire_department</span>
+                        <span class="font-label font-bold text-orange-400">${user.streak} DAY STREAK</span>
+                    </div>
+                </div>
+            `;
+
+            // 2. Sidebar Updates
+            document.getElementById('sidebar-profile').innerHTML = `
+                <div class="w-14 h-14 rounded-full border-2 border-cyan-400 overflow-hidden shadow-[0_0_15px_rgba(0,238,252,0.3)] bg-zinc-800 flex-shrink-0">
+                    ${avatarHtml}
+                </div>
+                <div>
+                    <h2 class="font-headline font-black text-cyan-400 text-lg leading-tight mb-1 truncate w-32">${user.name.toUpperCase()}</h2>
+                    <p class="font-label text-zinc-500 text-[10px] tracking-tighter leading-none">${user.role}</p>
+                </div>
+            `;
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const isActive = link.getAttribute('href') === view;
+                link.className = `nav-link flex items-center gap-4 px-6 py-4 transition-colors font-label font-light ${isActive ? 'text-cyan-400 border-r-2 border-cyan-400 bg-cyan-500/5' : 'text-zinc-500 hover:text-zinc-300'}`;
+            });
+
+            // 3. Main View Injection
+            const canvas = document.getElementById('main-canvas');
+            if (view === '#tasks') {
+                const active = db.tasks.filter(t => t.user === user.id && !t.done);
+                canvas.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-primary">format_list_bulleted</span>
+                        <h3 class="font-headline text-2xl font-bold text-primary">ACTIVE_TASKS</h3>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        ${active.length ? active.map(t => `
+                            <div class="glass-panel p-5 rounded border-l-4 ${t.type === 'CRITICAL' ? 'border-l-error' : 'border-l-secondary'} border-y border-r border-white/5">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <button onclick="completeTask('${t.id}')" class="w-6 h-6 border-2 border-white/20 rounded flex items-center justify-center hover:border-tertiary group">
+                                            <span class="material-symbols-outlined text-transparent group-hover:text-tertiary">check</span>
+                                        </button>
+                                        <h4 class="font-headline font-bold text-lg text-white">${t.title}</h4>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-white/5 text-[10px] rounded text-white">${t.type}</span>
+                                </div>
+                                <div class="text-xs font-label text-zinc-400 ml-9">+${t.xp} XP</div>
+                            </div>
+                        `).join('') : '<p class="text-zinc-500 font-label">No active tasks. System idle.</p>'}
+                    </div>
+                `;
+            } else if (view === '#completed') {
+                const done = db.tasks.filter(t => t.user === user.id && t.done);
+                canvas.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-tertiary">check_circle</span>
+                        <h3 class="font-headline text-2xl font-bold text-tertiary">ARCHIVE</h3>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        ${done.map(t => `<div class="glass-panel p-4 rounded opacity-50"><h4 class="font-headline line-through text-white">${t.title}</h4></div>`).join('')}
+                    </div>
+                `;
+            } else if (view === '#settings') {
+                const userButtons = Object.values(db.users).map(u => `
+                    <button onclick="switchAccount('${u.id}')" class="px-4 py-2 bg-zinc-800 rounded mb-2 hover:bg-zinc-700 transition-colors ${db.activeUser === u.id ? 'border border-primary text-primary shadow-[0_0_10px_rgba(223,142,255,0.2)]' : 'text-white border border-transparent'}">
+                        Load ${u.name}
+                    </button>
+                `).join('');
+
+                canvas.innerHTML = `
+                    <h3 class="font-headline text-2xl font-bold text-zinc-400 mb-6">SYSTEM_SETTINGS</h3>
+                    
+                    <div class="glass-panel p-6 rounded border border-white/10 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-label text-zinc-300 mb-1">Active Visual Identity</p>
+                                <p class="text-xs text-zinc-500 mb-4">Modify the avatar for ${user.name}</p>
+                            </div>
+                            <div class="w-16 h-16 rounded-full border-2 border-primary overflow-hidden bg-zinc-800">
+                                ${avatarHtml}
+                            </div>
+                        </div>
+                        <button onclick="toggleAvatarModal()" class="px-4 py-2 text-xs bg-white/5 text-white border border-white/20 rounded hover:bg-white/10 transition-colors">EDIT AVATAR</button>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded border border-white/10">
+                        <p class="font-label mb-4 text-zinc-300">Switch Operator Profile:</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            ${userButtons}
+                        </div>
+                        <div class="h-px bg-white/10 w-full mb-6"></div>
+                        <button onclick="toggleProfileModal()" class="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/40 rounded hover:bg-secondary/20 flex items-center gap-2 transition-colors">
+                            <span class="material-symbols-outlined text-sm">person_add</span> INITIALIZE NEW OPERATOR
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!localStorage.getItem(DB_KEY)) localStorage.setItem(DB_KEY, JSON.stringify(defaultData));
+            window.addEventListener('hashchange', render);
+            saveDB(checkStreak(getDB()));
+        });
+    </script>
+</body>
+
+</html>
