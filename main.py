@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 app = FastAPI(title="NEO_TASK_API")
 
-aapp.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8000", "https://todolistcodeca.netlify.app/"], # Add your Netlify URL here
     allow_credentials=True,
