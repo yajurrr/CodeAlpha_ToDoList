@@ -5,7 +5,13 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 app = FastAPI(title="NEO_TASK_API")
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+aapp.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000", "https://todolistcodeca.netlify.app/"], # Add your Netlify URL here
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Replace YOUR_ACTUAL_PASSWORD_HERE
 MONGO_URI = "mongodb+srv://yajurxo:YOUR_ACTUAL_PASSWORD_HERE@cluster0.wchsllp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
