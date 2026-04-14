@@ -98,6 +98,13 @@ window.completeTask = function (taskId) {
     }
 };
 
+window.deleteTask = function (taskId) {
+    if (!confirm('⚠ CONFIRM TASK TERMINATION?')) return;
+    const db = getDB();
+    db.tasks = db.tasks.filter(t => t.id !== taskId);
+    saveDB(db);
+};
+
 window.switchUser = function (userId) {
     const db = getDB();
     if (db.users[userId]) {
@@ -112,11 +119,15 @@ function renderHeader(user) {
 
     // Update Desktop Header
     document.querySelector('header').innerHTML = `
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full border-2 border-primary overflow-hidden shadow-[0_0_10px_rgba(223,142,255,0.5)] cursor-pointer" onclick="switchUser('${user.id === 'usr_01' ? 'usr_02' : 'usr_01'}')" title="Click to switch user">
+        <div class="flex items-center gap-2 sm:gap-4">
+            <button onclick="toggleMobileSidebar()" class="lg:hidden w-9 h-9 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-primary text-xl">menu</span>
+            </button>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-primary overflow-hidden shadow-[0_0_10px_rgba(223,142,255,0.5)] cursor-pointer flex-shrink-0" onclick="switchUser('${user.id === 'usr_01' ? 'usr_02' : 'usr_01'}')" title="Click to switch user">
                 <img alt="avatar" class="w-full h-full object-cover" src="${user.avatar}" />
             </div>
-            <span class="font-headline tracking-widest uppercase text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-600">NEO_TASK</span>
+            <span class="font-headline tracking-widest uppercase text-base sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-600 hidden sm:inline">NEO_TASK</span>
+            <span class="font-headline tracking-widest uppercase text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-600 sm:hidden">NEO</span>
         </div>
         <div class="hidden md:flex flex-col items-center gap-1 min-w-[300px]">
             <div class="flex justify-between w-full text-[10px] font-label text-secondary tracking-tighter">
@@ -127,7 +138,22 @@ function renderHeader(user) {
                 <div class="h-full bg-gradient-to-r from-secondary to-secondary-dim shadow-[0_0_10px_rgba(0,238,252,0.8)] transition-all duration-500" style="width: ${xpPercentage}%"></div>
             </div>
         </div>
-        <div class="flex items-center gap-4">
+        <!-- Mobile XP + Streak compact view -->
+        <div class="flex md:hidden items-center gap-2">
+            <div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded-full border border-cyan-500/20 xp-bar-mobile">
+                <span class="font-label text-[10px] text-secondary font-bold">LV</span>
+                <span class="font-label text-[10px] text-cyan-400 font-bold">${user.level}</span>
+                <div class="w-12 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-secondary transition-all" style="width: ${xpPercentage}%"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded-full border border-orange-500/30">
+                <span class="material-symbols-outlined text-orange-500 text-xs" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                <span class="font-label font-bold text-orange-400 text-[10px]">${user.streak}</span>
+            </div>
+        </div>
+        <!-- Desktop streak -->
+        <div class="hidden md:flex items-center gap-4">
             <div class="flex items-center gap-2 bg-surface-container px-3 py-1 rounded-full border border-orange-500/30">
                 <span class="material-symbols-outlined text-orange-500 text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
                 <span class="font-label font-bold text-orange-400">${user.streak} DAY STREAK</span>
@@ -157,12 +183,17 @@ function renderTasksList(db, view = 'tasks') {
             <div class="glass-panel p-5 rounded border-l-4 border-l-${task.type === 'CRITICAL' ? 'error' : 'secondary'} border-y border-r border-white/5 transition-all">
                 <div class="flex items-start justify-between mb-2">
                     <div class="flex items-center gap-3">
-                        <button onclick="completeTask('${task.id}')" class="w-6 h-6 border-2 border-white/20 rounded flex items-center justify-center hover:border-tertiary transition-colors">
+                        <button onclick="completeTask('${task.id}')" class="w-6 h-6 border-2 border-white/20 rounded flex items-center justify-center hover:border-tertiary transition-colors flex-shrink-0">
                             <span class="material-symbols-outlined text-transparent hover:text-tertiary">check</span>
                         </button>
                         <h4 class="font-headline font-bold text-lg text-on-surface">${task.title}</h4>
                     </div>
-                    <span class="px-2 py-0.5 bg-white/5 text-[10px] rounded border border-white/10">${task.type}</span>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="px-2 py-0.5 bg-white/5 text-[10px] rounded border border-white/10">${task.type}</span>
+                        <button onclick="deleteTask('${task.id}')" class="w-7 h-7 flex items-center justify-center rounded hover:bg-error/20 transition-colors group" title="Delete task">
+                            <span class="material-symbols-outlined text-zinc-600 group-hover:text-error text-lg transition-colors">delete</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex items-center gap-6 mt-4 text-xs font-label text-on-surface-variant">
                     <div class="flex items-center gap-1">
@@ -266,6 +297,18 @@ function handleRoute() {
         }
     });
 
+    // Update mobile bottom nav active states
+    document.querySelectorAll('.bottom-nav-link').forEach(link => {
+        const linkView = '#' + link.getAttribute('data-view');
+        if (linkView === hash) {
+            link.classList.remove('text-zinc-500');
+            link.classList.add('active');
+        } else {
+            link.classList.add('text-zinc-500');
+            link.classList.remove('active');
+        }
+    });
+
     renderTasksList(db, hash.replace('#', ''));
 }
 
@@ -276,6 +319,21 @@ function renderApp() {
     renderHeader(db.users[db.activeUserId]);
     handleRoute();
 }
+
+// Mobile sidebar toggle functions
+window.toggleMobileSidebar = function() {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('mobile-open');
+    if (overlay) overlay.classList.toggle('active');
+};
+
+window.closeMobileSidebar = function() {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+};
 
 // Setup Event Listeners
 window.addEventListener('hashchange', handleRoute);
